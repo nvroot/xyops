@@ -2507,7 +2507,7 @@ Page.Base = class Base extends Page {
 			
 			switch (param.type) {
 				case 'text':
-					if (elem_value.toString().length) {
+					if (param.id in params) {
 						if (param.variant) {
 							var variant_def = find_object( config.ui.text_field_variants, { id: param.variant } );
 							if (variant_def) elem_icon = variant_def.icon;
@@ -2520,7 +2520,7 @@ Page.Base = class Base extends Page {
 				
 				case 'textarea':
 				case 'code':
-					if (elem_value.toString().length) {
+					if (param.id in params) {
 						html += '<i class="link mdi mdi-' + elem_icon + '" onClick="$P().copyPluginParamValue(this)" title="Copy to Clipboard">&nbsp;</i>';
 						html += '<button class="link" onClick="$P().viewPluginParamValue(this)">Click to View...</button>';
 						html += '<span class="data_value" style="display:none" data-title="' + encode_attrib_entities(param.title) + '">' + encode_entities(elem_value) + '</span>';

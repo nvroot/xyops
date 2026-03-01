@@ -2818,12 +2818,15 @@ Page.PageUtils = class PageUtils extends Page.Base {
 						}
 					}
 					else if (param.variant == 'number') {
-						params[ param.id ] = parseFloat( params[ param.id ] );
-						if (isNaN(params[ param.id ])) {
-							app.badField('#fe_pp_' + plugin_id + '_' + CSS.escape(param.id), "The &ldquo;" + param.title + "&rdquo; field is invalid.");
-							is_valid = false;
-						}
-					}
+						if (param.required || params[ param.id ].length) {
+							params[ param.id ] = parseFloat( params[ param.id ] );
+							if (isNaN(params[ param.id ])) {
+								app.badField('#fe_pp_' + plugin_id + '_' + CSS.escape(param.id), "The &ldquo;" + param.title + "&rdquo; field is invalid.");
+								is_valid = false;
+							} // NaN
+						} // required or length
+						else delete params[ param.id ];
+					} // number
 				break;
 			} // switch param.type
 		}); // foreach param
@@ -5093,13 +5096,16 @@ Page.PageUtils = class PageUtils extends Page.Base {
 					}
 				}
 				else if (param.variant == 'number') {
-					params[ param.id ] = parseFloat( params[ param.id ] );
-					if (isNaN(params[ param.id ])) {
-						app.badField('#fe_uf_' + CSS.escape(param.id), "The &ldquo;" + param.title + "&rdquo; field is invalid.");
-						is_valid = false;
-					}
-				}
-			}
+					if (param.required || params[ param.id ].length) {
+						params[ param.id ] = parseFloat( params[ param.id ] );
+						if (isNaN(params[ param.id ])) {
+							app.badField('#fe_uf_' + CSS.escape(param.id), "The &ldquo;" + param.title + "&rdquo; field is invalid.");
+							is_valid = false;
+						} // NaN
+					} // required or has length
+					else delete params[ param.id ];
+				} // number
+			} // textish
 		});
 		
 		return is_valid ? params : false;
