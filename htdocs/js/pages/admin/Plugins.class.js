@@ -1156,7 +1156,7 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 				spellcheck: 'false',
 				value: plugin.uid || ''
 			}),
-			caption: "Optionally set the User ID (UID) for the Plugin to run as.  The UID may be either numerical or a string ('root', 'www', etc.)."
+			caption: "Optionally set the User ID (UID) for the Plugin to run as.  The UID may be either numerical or a string (`root`, `www`, etc.).  Linux/macOS only."
 		});
 		
 		// GID
@@ -1168,7 +1168,7 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 				spellcheck: 'false',
 				value: plugin.gid || ''
 			}),
-			caption: "Optionally set the Group ID (GID) for the Plugin to run as.  The GID may be either numerical or a string ('wheel', 'admin', etc.)."
+			caption: "Optionally set the Group ID (GID) for the Plugin to run as.  The GID may be either numerical or a string (`wheel`, `admin`, etc.).  Linux/macOS only."
 		});
 		
 		// kill policy

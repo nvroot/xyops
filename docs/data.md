@@ -1111,6 +1111,17 @@ Optional notes or comments about the plugin's purpose or configuration.
 
 An internal revision number for the plugin, incremented with each change.
 
+### Plugin.marketplace
+
+Will contain [Plugin Marketplace](marketplace.md) metadata if the Plugin originated from a marketplace install.  Example:
+
+```json
+"marketplace": {
+	"id": "pixlcore/xyplug-bluesky",
+	"version": "v1.0.7"
+}
+```
+
 ## Role
 
 A user role is a set of privileges assigned to a user within the system.  A user may be assigned multiple roles, and all of the role privileges are merged and passed to the user.  A role may also include category and/or group restrictions, which are also applied to the assigned users.  Here is an example role in JSON format:

@@ -127,6 +127,7 @@ You can add global "universal" alert actions in the [alert_universal_actions](co
 
 Harden your web entry point and xyOps config before going live:
 
+- Configure Plugins to run as underprivileged users and/or groups (see [Plugin Credentials](#plugin-credentials)).
 - Restrict inbound IPs using [WebServer.whitelist](https://github.com/jhuckaby/pixl-server-web#whitelist) (supports CIDR). Only allow your corporate ranges and load balancers.
 - Limit valid Host headers/SNI via [WebServer.allow_hosts](https://github.com/jhuckaby/pixl-server-web#allow_hosts) to your production domains (e.g. `xyops.yourcompany.com`).
 - HTTPS: Enable [WebServer.https](https://github.com/jhuckaby/pixl-server-web#https), set cert/key paths, and consider [WebServer.https_force](https://github.com/jhuckaby/pixl-server-web#https_force) so HTTP redirects to HTTPS. If terminating TLS upstream, configure [WebServer.https_header_detect](https://github.com/jhuckaby/pixl-server-web#https_header_detect).
@@ -137,6 +138,45 @@ Harden your web entry point and xyOps config before going live:
 - Headers/CSP: Use [WebServer.uri_response_headers](https://github.com/jhuckaby/pixl-server-web#uri_response_headers) to enforce CSP, HSTS, and other security headers for HTML routes. 
 - Access control: Use [WebServer.default_acl](https://github.com/jhuckaby/pixl-server-web#default_acl) for private handlers and verify API keys/SSO policies. Lock down admin endpoints behind SSO where applicable.
 - Rotate your secret key every few months.  See [Secret Key Rotation](hosting.md#secret-key-rotation) for details.
+
+## Plugin Credentials
+
+[xyOps Plugins](plugins.md) can be configured to run as any user and/or group, by specifying a UID / GID for each one.  However, you may also want to specify a set of default users / groups via the [default_plugin_credentials](config.md#default_plugin_credentials) configuration object.  Using this you can set defaults per each plugin type:
+
+```json
+"default_plugin_credentials": {
+	"action": { "uid": "xyops", "gid": "xyops" },
+	"event": { "uid": "xyops", "gid": "xyops" },
+	"monitor": { "uid": "xyops", "gid": "xyops" },
+	"scheduler": { "uid": "xyops", "gid": "xyops" }
+}
+```
+
+Note that individual plugins can still specify their own UID/GID, which will override the defaults.  An exception is [Marketplace Plugins](marketplace.md), which explicitly **cannot** specify their own UID or GID, and will **always** use the default credentials you set in `default_plugin_credentials`.
+
+It should be noted that Docker-based Plugins, including the built-in [Docker Shell Plugin](plugins.md#docker-plugin), require elevated privileges in order to launch their containers.  If you plan on using Docker features in xyOps, please make sure your underprivileged user has read/write access to the Docker socket, or set those specific plugins to run as root.
+
+Note that Microsoft Windows doesn't have the concept of UIDs or GIDs, so Plugins on that platform will always run as administrator unless you specifically script them not to.  For example, you can launch a Powershell script as a different user given their credentials (which should be stored in a [Secret Vault](secrets.md)):
+
+```powershell
+# Read credentials from environment variables (secret vault)
+$username = $env:WIN_USERNAME
+$password = $env:WIN_PASSWORD
+
+# Convert password to SecureString
+$secure = ConvertTo-SecureString $password -AsPlainText -Force
+
+# Build credential object
+$cred = New-Object System.Management.Automation.PSCredential ($username, $secure)
+
+# Launch child script as target user
+Start-Process powershell `
+    -Credential $cred `
+	-LoadUserProfile `
+	-WorkingDirectory "C:\scripts" `
+    -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File C:\scripts\child.ps1" `
+    -Wait
+```
 
 ## Rate Limiting
 

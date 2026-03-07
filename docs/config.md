@@ -92,6 +92,11 @@ This number (in seconds) determines when a running job with no updates is consid
 
 This number (in seconds) determines when stale alerts are cleared.  Stale alerts occur when a server disconnects with active alerts attached.
 
+## default_plugin_credentials
+<!-- Title: Default Plugin Credentials -->
+
+This object allows you to set default UID and/or GID values for each type of Plugin.  The UID/GID may be either numerical IDs or username strings (`root`, `admin`, etc.).  Linux/macOS only.
+
 ## job_env
 <!-- Title: Job Environment Variables -->
 

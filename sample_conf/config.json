@@ -38,6 +38,13 @@
 	"dead_job_timeout": 120,
 	"stale_alert_timeout": 90,
 	
+	"default_plugin_credentials": {
+		"action": { "uid": "", "gid": "" },
+		"event": { "uid": "", "gid": "" },
+		"monitor": { "uid": "", "gid": "" },
+		"scheduler": { "uid": "", "gid": "" }
+	},
+	
 	"job_env": {},
 	
 	"job_universal_limits": {
