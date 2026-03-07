@@ -1,5 +1,12 @@
 # xyOps Changelog
 
+## Version v1.0.20
+
+> March 7, 2026
+
+- [`e031a0d`](https://github.com/pixlcore/xyops/commit/e031a0d3bbf12048a8720f9ea263c17b56924a02): Version 1.0.20
+- [`e4510e5`](https://github.com/pixlcore/xyops/commit/e4510e5f043f6b82cd6dcf50d8ac7ff26cd00da4): Number Variant Text Fields: Redesign to use special `null` value when optional fields are blank.
+
 ## Version v1.0.19
 
 > March 6, 2026
