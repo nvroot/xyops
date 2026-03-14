@@ -46,6 +46,8 @@ Page.Login = class Login extends Page.Base {
 			html += '<div class="dialog_intro">Enter the username and password associated with your ' + config.name + ' account.</div>';
 			html += '<div class="dialog_content">';
 			html += '<div class="box_content">';
+			
+				html += '<div style="height:20px;"></div>';
 				
 				// username
 				html += this.getFormRow({
@@ -77,7 +79,7 @@ Page.Login = class Login extends Page.Base {
 				// if (config.free_accounts) {
 				// 	html += '<div class="button" onClick="$P().navCreateAccount()">Create Account...</div>';
 				// }
-				html += '<div class="button mobile_hide" onClick="$P().cancelCreate()">Cancel</div>';
+				// html += '<div class="button mobile_hide" onClick="$P().cancelCreate()">Cancel</div>';
 				html += '<div class="button" onClick="$P().navPasswordRecovery()">Forgot Password...</div>';
 				html += '<div class="button primary" onClick="$P().doLogin()"><i class="mdi mdi-key">&nbsp;</i>Login</div>';
 			html += '</div>';
@@ -106,6 +108,7 @@ Page.Login = class Login extends Page.Base {
 	
 	doLogin() {
 		// attempt to log user in
+		var self = this;
 		var username = $('#fe_login_username').val().toLowerCase();
 		var password = $('#fe_login_password').val();
 		
@@ -122,9 +125,109 @@ Page.Login = class Login extends Page.Base {
 				Dialog.hideProgress();
 				app.doUserLogin( resp );
 				
-				Nav.go( app.navAfterLogin || config.DefaultPage );
+				if (app.user.force_password_change) self.showPasswordChangeForm(password);
+				else Nav.go( app.navAfterLogin || config.DefaultPage );
 			} ); // post
 		}
+	}
+	
+	showPasswordChangeForm(old_password) {
+		// show password change form
+		app.setWindowTitle('Change Password');
+		app.showSidebar(false);
+		
+		var html = '';
+		html += '<form action="post">';
+		
+		html += '<div class="dialog inline">';
+			html += '<div class="dialog_title"><span class="danger">Change Password</span></div>';
+			html += '<div class="dialog_intro">Please change your account password to something more secure.</div>';
+			html += '<div class="dialog_content">';
+			html += '<div class="box_content">';
+			
+				html += '<div style="height:20px;"></div>';
+				
+				// current password
+				html += this.getFormRow({
+					label: 'Current Password:',
+					content: this.getFormText({
+						type: 'password',
+						id: 'fe_login_old_password',
+						spellcheck: 'false',
+						autocomplete: 'off',
+						maxlength: 256,
+						value: old_password
+					}),
+					suffix: app.get_password_toggle_html(),
+					caption: "Enter your current account password here."
+				});
+				
+				// new password
+				html += this.getFormRow({
+					label: 'New Password:',
+					content: this.getFormText({
+						type: 'password',
+						id: 'fe_login_new_password',
+						spellcheck: 'false',
+						autocomplete: 'off',
+						maxlength: 256,
+						value: ''
+					}),
+					suffix: app.get_password_toggle_html(),
+					caption: "Enter a new password for your account here."
+				});
+			
+			html += '</div>';
+			
+			html += '<div class="dialog_buttons">';
+				html += '<div class="button delete" onClick="$P().doChangePassword()"><i class="mdi mdi-key">&nbsp;</i>Change Password</div>';
+			html += '</div>';
+		
+		html += '</div>'; // box_content
+		html += '</div>'; // dialog_content
+		html += '</div>'; // dialog
+		html += '</form>';
+		
+		this.div.html( html ).buttonize();
+		
+		setTimeout( function() {
+			$('#fe_login_new_password').focus();
+			$('#fe_login_new_password').keypress( function(event) {
+				if (event.keyCode == '13') { // enter key
+					event.preventDefault();
+					$P().doChangePassword();
+				}
+			} );
+		}, 1 );
+	}
+	
+	doChangePassword() {
+		// change password, then continue login
+		var updates = {
+			username: app.username
+		};
+		
+		var old_password = $('#fe_login_old_password').val();
+		var new_password = $('#fe_login_new_password').val();
+		
+		if (!old_password.length) {
+			return app.badField('#fe_login_old_password', "Please enter your current account password.");
+		}
+		if (!new_password.length) {
+			return app.badField('#fe_login_new_password', "Please enter a new password for your account.");
+		}
+		
+		updates.old_password = old_password;
+		updates.new_password = new_password;
+		
+		Dialog.showProgress( 1.0, "Changing password..." );
+		
+		app.api.post( 'user/update', updates, function(resp) {
+			// save complete
+			Dialog.hideProgress();
+			app.showMessage('success', "Your account password was updated successfully.");
+			Nav.go( app.navAfterLogin || config.DefaultPage );
+		} );
 	}
 	
 	cancelRecover() {
@@ -158,6 +261,8 @@ Page.Login = class Login extends Page.Base {
 			html += '<div class="dialog_intro">Fill out this form to sign up for ' + config.name + '.</div>';
 			html += '<div class="dialog_content">';
 			html += '<div class="box_content">';
+			
+				html += '<div style="height:20px;"></div>';
 				
 				// username
 				html += this.getFormRow({
@@ -314,6 +419,8 @@ Page.Login = class Login extends Page.Base {
 			html += '<div class="dialog_intro">Please enter the username and e-mail address associated with your account, and we will send you instructions for resetting your password.</div>';
 			html += '<div class="dialog_content">';
 			html += '<div class="box_content">';
+			
+				html += '<div style="height:20px;"></div>';
 				
 				// username
 				html += this.getFormRow({
@@ -409,6 +516,8 @@ Page.Login = class Login extends Page.Base {
 			html += '<div class="dialog_intro">Please enter a new password for your account.</div>';
 			html += '<div class="dialog_content">';
 			html += '<div class="box_content">';
+			
+				html += '<div style="height:20px;"></div>';
 				
 				// username
 				html += this.getFormRow({

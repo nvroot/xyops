@@ -35,6 +35,12 @@ body.login {
 body.login div.header {
 	background-position: center center;
 }
+body.login #d_logo_overlay {
+	display: none;
+}
+body.login #d_header_user_container {
+	display: none;
+}
 
 body.magic {
 	margin-top: 10vh;

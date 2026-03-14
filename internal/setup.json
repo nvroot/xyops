@@ -3,6 +3,7 @@
 		[ "put", "users/admin", {
 			"username": "admin",
 			"password": "$2a$10$VAF.FNvz1JqhCAB5rCh9GOa965eYWH3fcgWIuQFAmsZnnVS/.ye1y",
+			"force_password_change": true,
 			"full_name": "Administrator",
 			"email": "admin@localhost",
 			"active": 1,
