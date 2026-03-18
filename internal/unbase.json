@@ -152,6 +152,10 @@
 					"master_list": true
 				},
 				{
+					"id": "autoGroup",
+					"source": "/autoGroup"
+				},
+				{
 					"id": "created",
 					"source": "/created",
 					"type": "number",
