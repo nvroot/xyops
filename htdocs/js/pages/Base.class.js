@@ -404,10 +404,14 @@ Page.Base = class Base extends Page {
 		var default_icon = 'file-clock-outline';
 		var loc = '#Events';
 		
-		if (!item.enabled) default_icon = 'file-outline';
+		// pick default icon based on event attributes
 		if (item.type == 'workflow') {
 			default_icon = 'clipboard-flow-outline';
 			if (!item.enabled) default_icon = 'clipboard-outline';
+		}
+		else {
+			if (find_object(item.actions || [], { type: 'run_event', enabled: true })) default_icon = 'file-link-outline';
+			if (!item.enabled) default_icon = 'file-outline';
 		}
 		
 		var html = '<span class="nowrap" title="' + encode_attrib_entities(item.title) + '">';
