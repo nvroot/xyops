@@ -140,8 +140,3 @@ This is a low-level developer tool, and requires advanced knowledge of the datab
 - The `/opt/xyops/internal/unbase.json` file, which describes all the database tables in xyOps.
 - The [Unbase](https://github.com/jhuckaby/pixl-server-unbase) database system which powers xyOps.
 - The [query syntax](https://github.com/jhuckaby/pixl-server-storage/blob/master/docs/Indexer.md#simple-queries) documentation.
-
-## Docker
-
-When running xyOps in a Docker container, the best way to get shell access for command-line use is by restarting the container with "bash" on the end of the command:
-
