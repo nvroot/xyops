@@ -181,7 +181,7 @@
 			"created": 1434125333,
 			"params": [
 				{ "type":"select", "id":"method", "title":"Method", "value":"GET, HEAD, POST, PUT, DELETE" }, 
-				{ "type":"text", "id":"url", "title":"URL", "value":"https://", "required": true }, 
+				{ "type":"text", "id":"url", "title":"URL", "value":"https://", "required": true, "locked": true }, 
 				{ "type":"textarea", "id":"headers", "title":"Request Headers", "value":"User-Agent: xyOps/HTTP-Plugin" }, 
 				{ "type":"textarea", "id":"data", "title":"POST Data", "value":"" }, 
 				{ "type":"text", "id":"timeout", "title":"Timeout (Seconds)", "value":"30" }, 
@@ -205,7 +205,7 @@
 					"title": "Image Name",
 					"type": "text",
 					"caption": "Enter the name of the Docker image to use, which can be local or remote.",
-					"locked": false,
+					"locked": true,
 					"value": "ghcr.io/pixlcore/xyops-shell-image",
 					"variant": "text",
 					"required": true
@@ -215,7 +215,7 @@
 					"title": "Image Version",
 					"type": "text",
 					"caption": "Enter the desired version of the image to use, or use \"latest\" for the latest version.",
-					"locked": false,
+					"locked": true,
 					"value": "latest",
 					"variant": "text",
 					"required": true
@@ -265,7 +265,7 @@
 					"title": "Command Extras",
 					"type": "text",
 					"caption": "Optionally add any extra command-line arguments to pass to `docker run` (for e.g. volume mounts).",
-					"locked": false,
+					"locked": true,
 					"value": "",
 					"variant": "text",
 					"required": false
@@ -275,7 +275,7 @@
 					"title": "Launch Command",
 					"type": "text",
 					"caption": "Enter the initial command to run as the container starts.  It is recommended to use [xyrun](https://github.com/pixlcore/xyrun) for this, so resources are monitored, and files are managed properly.\n",
-					"locked": false,
+					"locked": true,
 					"value": "xyrun",
 					"variant": "text",
 					"required": false
