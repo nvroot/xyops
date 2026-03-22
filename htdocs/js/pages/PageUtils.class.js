@@ -3639,7 +3639,7 @@ Page.PageUtils = class PageUtils extends Page.Base {
 			switch (param.type) {
 				case 'text':
 				case 'textarea':
-					if (elem_value.toString().length) {
+					if ((elem_value !== null) && String(elem_value).length) {
 						html += '<i class="mdi mdi-' + elem_icon + '">&nbsp;</i>';
 						html += strip_html( elem_value );
 					}
