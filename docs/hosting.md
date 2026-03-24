@@ -557,6 +557,18 @@ Note that you should **not** add a `host` property into the [satellite.config](c
 
 When both `hosts` and `host` exist in the config file, `host` takes precedence.
 
+#### Customizing Managed Keys
+
+By default, the entire satellite configuration object from the primary conductor server is distributed out to all remote servers when they connect, and that configuration block *overwrites* whatever is in their local `/opt/xyops/satellite/config.json` files.  This is by design, so you can maintain a single, central satellite configuration, change it at any time, and have it automatically sync to all your servers.
+
+However, if you have a custom setup where you want some of your servers to have varying configurations, this is possible.  On those servers specifically, add a `managed_keys` property into their `/opt/xyops/satellite/config.json` files, and populate this array with all the keys that you want to allow xyOps to "manage" automatically (i.e. which ones you want to allow it to overwrite).  Example:
+
+```json
+"managed_keys": [ "server_id", "auth_token", "hosts" ]
+```
+
+This would only allow xyOps to overwrite the `server_id`, `auth_token` and `hosts` configuration keys when the server connects.  All the other configuration properties may vary, and will not be touched.  Note that it is important to always allow the `auth_token` property to be overwritten, so you can [rotate the secret key](#secret-key-rotation) from the conductor (rotating the secret key requires all server auth tokens to be regenerated).
+
 ## Proxy Servers
 
 To send all outbound requests through a proxy (for e.g. web hooks), simply set one or more of the [de-facto standard environment variables](https://curl.se/docs/manpage.html#ENVIRONMENT) used for this purpose:
