@@ -5735,6 +5735,161 @@ Example response:
 { "code": 0 }
 ```
 
+
+
+## xyOps Satellite
+
+These APIs handle xySat bootstrap, install, upgrade, and release discovery.  Unlike most xyOps APIs, the `satellite` endpoint family serves plain-text scripts, tarballs, and JSON config files rather than the standard JSON response envelope on success.
+
+### get_satellite_token
+
+```
+POST /api/app/get_satellite_token/v1
+```
+
+Generate a short-lived satellite bootstrap token for use with the [satellite](#satellite) API family.  Requires a valid user session or API Key with the [add_servers](privileges.md#add_servers) privilege.
+
+Parameters:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `expires` | Number | Optional. Token lifetime in seconds. Defaults to `86400` (24 hours). |
+| `title` | String | Optional. Initial title / label to assign to the server on first connect. |
+| `enabled` | Boolean | Optional. Initial enabled state for the server record. |
+| `icon` | String | Optional. Initial icon for the server record. |
+| `groups` | Array(String) | Optional. Initial server groups. Empty arrays are ignored. |
+| (Other) | Various | Optional. Additional initial server metadata to embed in the bootstrap token. |
+
+Example request:
+
+```json
+{
+	"title": "Build Worker 01",
+	"enabled": 1,
+	"icon": "server",
+	"groups": ["build", "linux"],
+	"expires": 3600
+}
+```
+
+Example response:
+
+```json
+{
+	"code": 0,
+	"token": "tme4wxyz9ab",
+	"base_url": "https://xyops01.example.com",
+	"image": "ghcr.io/pixlcore/xysat",
+	"version": "latest"
+}
+```
+
+In addition to the [Standard Response Format](#standard-response-format), this returns:
+
+- `token`: The generated time-based bootstrap token.
+- `base_url`: Base URL to use for the bootstrap request.
+- `image`: The configured xySat container image name.
+- `version`: The configured xySat release tag to install.
+
+Notes:
+
+- The returned token authenticates satellite bootstrap requests via the `t` query parameter.
+- `base_url`, `image`, and `version` come from the conductor's [satellite](config.md#satellite) configuration.
+- The bootstrap token carries the initial server metadata, which is later written into the generated satellite config as `initial`.
+
+### get_satellite_releases
+
+```
+GET /api/app/get_satellite_releases/v1
+```
+
+Fetch the list of official xySat release tags from the origin configured in [satellite](config.md#satellite) (usually GitHub).  Requires a valid user session or API Key with the [add_servers](privileges.md#add_servers) privilege.
+
+No input parameters.
+
+Example response:
+
+```json
+{
+	"code": 0,
+	"releases": ["latest", "v0.9.50", "v0.9.49"]
+}
+```
+
+In addition to the [Standard Response Format](#standard-response-format), this returns a `releases` array.  The first element is always `latest`, followed by the discovered release tags.
+
+Notes:
+
+- This uses the configured release metadata URL, typically GitHub, from the [satellite](config.md#satellite) settings.
+- Air-gap rules are honored.  If air-gap mode is enabled and a satellite bucket is configured, the API returns `["airgap"]` instead of querying upstream.
+
+### satellite
+
+```
+GET /api/app/satellite/install?t=...
+GET /api/app/satellite/upgrade?s=...&t=...
+GET /api/app/satellite/core?t=...&os=...&arch=...
+GET /api/app/satellite/config?t=...
+```
+
+Bootstrap or upgrade xySat on remote systems.  This endpoint family is used internally by the "Add Server" flow, the worker upgrade system, Docker bootstrap, and xySat self-upgrade.
+
+Authentication:
+
+- Bootstrap token: Pass a time-based token from [get_satellite_token](#get_satellite_token) in the `t` query parameter.
+- Server token: Pass the server's permanent auth token in `t` and the server ID in `s`.  This is used for self-upgrade and is accepted only for active or recently active servers.
+- API Key: Pass an API Key with the [add_servers](privileges.md#add_servers) privilege in `t`.  This is primarily for automated deployments and ephemeral infrastructure.
+
+Common query parameters:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `t` | String | **(Required)** Authentication token.  This may be a bootstrap token, server auth token, or API Key. |
+| `s` | String | Required for `/upgrade`, and also when authenticating via a server auth token.  This is the Server ID. |
+| `os` | String | Optional for `/install` to select the Windows PowerShell script.  Required for `/core` to select the correct package, e.g. `linux`, `darwin`, or `windows`. |
+| `arch` | String | Required for `/core` to select the correct package architecture, e.g. `x64` or `arm64`. |
+
+Sub-methods:
+
+- `/api/app/satellite/install`: Returns a plain-text bootstrap script (`text/plain`).  Use `os=windows` to fetch the PowerShell installer; otherwise a POSIX shell script is returned.  When authenticated with a bootstrap token, any extra query parameters other than `t` and `os` are merged into the initial server metadata before the config is generated.
+- `/api/app/satellite/upgrade`: Returns a plain-text upgrade script (`text/plain`).  Requires `s` plus `t`.  Use `os=windows` to fetch the PowerShell upgrade script; otherwise a POSIX shell script is returned.
+- `/api/app/satellite/core`: Returns the xySat tarball (`application/gzip`) with a download filename like `satellite-OS-ARCH.tar.gz`.  If a satellite bucket is configured, the file is served from there.  Otherwise xyOps uses its local cache and fetches from the configured upstream release base URL as needed.
+- `/api/app/satellite/config`: Returns a generated `config.json` file (`application/json`).  This includes the conductor's `satellite.config`, air-gap settings if not already present, the current master host and port, a newly generated `server_id`, a derived `auth_token`, and any initial bootstrap metadata under `initial`.
+
+Example bootstrap commands:
+
+```sh
+curl -s "https://xyops01.example.com/api/app/satellite/install?t=TOKEN_HERE" | sudo sh
+```
+
+```powershell
+powershell -Command "IEX (Invoke-WebRequest -UseBasicParsing -Uri 'https://xyops01.example.com/api/app/satellite/install?t=TOKEN_HERE&os=windows').Content"
+```
+
+Example `config` response:
+
+```json
+{
+	"port": 5522,
+	"secure": false,
+	"hosts": ["xyops01.example.com"],
+	"server_id": "sabc123def",
+	"auth_token": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+	"initial": {
+		"title": "Build Worker 01",
+		"groups": ["build", "linux"]
+	}
+}
+```
+
+Notes:
+
+- Successful responses are streamed files or plain text, depending on the sub-method.  On errors, the standard JSON API error format is returned.
+- `/config` generates a fresh `server_id` and `auth_token` on every request, which is why the same API Key based bootstrap URL can be reused for provisioning ephemeral workers.
+- `/core` and release metadata requests honor air-gap settings.
+
+
+
 ## Miscellaneous
 
 ### ping
