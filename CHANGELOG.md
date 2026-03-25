@@ -1,5 +1,20 @@
 # xyOps Changelog
 
+## Version v1.0.40
+
+> March 24, 2026
+
+- [`587350b`](https://github.com/pixlcore/xyops/commit/587350bb71ce9b52f56a6586b200a98d277b73d1): Version 1.0.40
+- [`af38bad`](https://github.com/pixlcore/xyops/commit/af38badcc08a2cac7ca644cf4f113c25da6ecb67): SSO Doc: Fixed example command and added note about the xyOps AWS ALB SSO Plugin.
+- [`be4b79f`](https://github.com/pixlcore/xyops/commit/be4b79fc66562a2baf3346a94007ccbb9331b735): Feature: Custom SSO Plugin command, to validate and transform request for prep for SSO login.
+- [`9b9bb47`](https://github.com/pixlcore/xyops/commit/9b9bb47702b87abd60bff6b0e4e6433e731205c3): Sample Config: Update stock tls.crt and tls.key files (self-signed).
+- [`e998189`](https://github.com/pixlcore/xyops/commit/e9981893fdaeba09974edecc9b4ad4736f0bfdb9): API Doc: Add docs on internal satellite install/upgrade/config endpoints.
+- [`34290b7`](https://github.com/pixlcore/xyops/commit/34290b7796420b90d258abcec61a5db043955d56): Hosting Doc: Add section on customizing satellite config managed keys.
+- [`295aa28`](https://github.com/pixlcore/xyops/commit/295aa28428c5738958f2a114fdeff6bf3dd6f9af): Servers Doc: Add details on docker workers, specifically around bind mounting the xysat config file.
+- [`e96dcdb`](https://github.com/pixlcore/xyops/commit/e96dcdb106aa8ef35af4968bf66ca33ad1a938de): Workflow Behavior Change: Sub-job queuing now considers each workflow job to be its own queue "namespace".  Fixes #218.
+- [`9e94e45`](https://github.com/pixlcore/xyops/commit/9e94e456a1b5fbff133642a3673166424d59be6c): Bug Fix: Crasher in workflow if job is aborted very early, before it goes into an active state.
+- [`d23fe1e`](https://github.com/pixlcore/xyops/commit/d23fe1e25dd51b40fefb7c06b5a4ab5711949818): Security Hardening: Remove word boundary matching for scrubbing secrets from web hook diagnostic output.
+
 ## Version v1.0.39
 
 > March 23, 2026
