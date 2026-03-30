@@ -10,39 +10,41 @@ It is really important to understand that wherever you decide to run xyOps, that
 
 ## Quick-Start
 
-To start quickly and just get xyOps up and running to test it out, you can use the following Docker command:
+To start quickly and just get xyOps up and running with a single conductor server, you can use the following Docker command (but **please** see the notes below, as they are extremely important):
 
 ```sh
 docker run \
 	--detach \
 	--init \
-	--name "xyops01" \
-	--hostname "xyops01" \
-	--restart unless-stopped \
+	--name "xyops-conductor-1" \
+	--hostname "xyops01.internal.mycompany.com" \
+	-e XYOPS_masters="xyops01.internal.mycompany.com" \
+	-e XYOPS_xysat_local="true" \
+	-e TZ="America/Los_Angeles" \
 	-v xy-data:/opt/xyops/data \
 	-v /local/path/to/xyops-conf:/opt/xyops/conf \
 	-v /var/run/docker.sock:/var/run/docker.sock \
-	-e XYOPS_xysat_local="true" \
-	-e TZ="America/Los_Angeles" \
+	--restart unless-stopped \
 	-p 5522:5522 \
 	-p 5523:5523 \
 	ghcr.io/pixlcore/xyops:latest
 ```
 
-Here it is as a docker compose file, along with an additional bind mount for the configuration directory:
+Here it is as a docker compose file:
 
 ```yaml
 services:
   xyops01:
     image: ghcr.io/pixlcore/xyops:latest
-    container_name: xyops01
-    hostname: xyops01
+    container_name: xyops-conductor-01
+    hostname: xyops01.internal.mycompany.com
 
     init: true
     restart: unless-stopped
 
     environment:
       XYOPS_xysat_local: "true"
+	  XYOPS_masters: "xyops01.internal.mycompany.com"
       TZ: America/Los_Angeles
 
     volumes:
@@ -58,20 +60,22 @@ volumes:
   xy-data:
 ```
 
-Please change `/local/path/to/xyops-conf` to a suitable location for the xyOps configuration to live on the host machine (so you can make changes easily).
+Please change `/local/path/to/xyops-conf` to a suitable location for the xyOps configuration directory to live on the host machine.
 
 Then hit http://localhost:5522/ in your browser for HTTP, or https://localhost:5523/ for HTTPS (note that this will have a self-signed cert -- see [TLS](#tls) below).  A default administrator account will be created with username `admin` and password `admin`.  This will create a Docker volume (`xy-data`) to persist the xyOps database, which by default is a hybrid of a SQLite DB and the filesystem itself for file storage.
 
 A few notes:
 
-- **Important:** Please change the sample `xyops01` hostname to something that actually resolves and is addressable on your network.  Without this, many features will not work properly.
-- In this case xyOps will have a self-signed cert for TLS, which the worker will accept by default.  See [TLS](#tls) for more details.
+- **Important:** Please change the sample `xyops01.internal.mycompany.com` hostname to something that actually resolves and is addressable on your network.  **Without this, many features will not work properly.**
+	- Also, you must change the `XYOPS_masters` environment variable to match this, as this defines your conductor "cluster" (in this case a cluster of one).
+- In this example xyOps will have a self-signed cert for TLS, which the worker will accept by default.  See [TLS](#tls) for more details.
 - Change the `TZ` environment variable to your local timezone, for proper midnight log rotation and daily stat resets.
-- The `XYOPS_xysat_local` environment variable causes xyOps to launch [xySat](#satellite) in the background, in the same container.  This is so you can start running jobs right away -- it is great for testing and home labs, but not recommended for production setups.
-- If you plan on using the container long term, please make sure to [rotate the secret key](#secret-key-rotation).
+- The `XYOPS_xysat_local` environment variable causes xyOps to launch [xySat](#satellite) in the background, in the same container.  This is so you can start running jobs right away -- it is great for testing and home labs, but *not recommended for production*.
+- The `XYOPS_masters` environment variable is how you define a cluster of multiple conductor servers (comma-separated hostnames).  In this case just set it to the hostname of the primary.
+- If you plan on using the container long term, please make sure to [rotate the secret key](#secret-key-rotation) regularly (e.g. every few months).
 - The `/var/run/docker.sock` bind is optional, and allows xyOps to launch its own containers (i.e. for the [Docker Plugin](plugins.md#docker-plugin), and the [Plugin Marketplace](marketplace.md)).
 
-Note that in order to add worker servers, the container needs to be *addressable on your network* by its hostname.  Typically this is done by adding the hostname to your local DNS, or using a `/etc/hosts` file.  See [Adding Servers](servers.md#adding-servers) for more details.
+Note that in order to add worker servers, the container needs to be *addressable on your network* by its hostname.  Typically this is done by adding the hostname to your local DNS, Tailscale, or using a `/etc/hosts` file.  See [Adding Servers](servers.md#adding-servers) for more details.
 
 ### Configuration
 
@@ -137,12 +141,14 @@ Once you have external storage setup and working, stop the xyOps service, and ed
 ```json
 {
 	"masters": [
-		"xyops01.mycompany.com"
+		"xyops01.internal.mycompany.com"
 	]
 }
 ```
 
-Add the new server hostname to the `masters` array.  Remember, both servers need to be able to reach each other via their hostnames.
+**Note:** If you are using Docker, this is likely specified via the `XYOPS_masters` environment variable instead (which is split on comma and written out to the `masters.json` file on boot).  So you can just change the environment variable and not have to edit the file manually.
+
+Add the new server hostname to the `masters` array in the `masters.json` file (or as a comma-separated list in `XYOPS_masters` for Docker setups).  Remember, both servers need to be able to reach each other via their hostnames.
 
 Then, install the software onto the new server, and copy over the following files before starting the service:
 
@@ -154,7 +160,7 @@ Then, install the software onto the new server, and copy over the following file
 
 Then finally, start the service on both servers.  They should self-negotiate and one will be promoted to primary after 10 seconds (whichever hostname sorts first alphabetically).
 
-Note that conductor server hostnames **cannot change**.  If they do, you will need to update the `/opt/xyops/conf/masters.json` file on all servers and restart everything.
+Note that conductor server hostnames **cannot change**.  If they do, you will need to update the `/opt/xyops/conf/masters.json` file on all servers and restart everything (or, if using Docker, change all the `XYOPS_masters` environment variables on all your conductor containers).
 
 For fully transparent auto-failover using a single user-facing hostname, see [Multi-Conductor with Nginx](#multi-conductor-with-nginx) below.
 
@@ -183,8 +189,8 @@ For overriding configuration properties by environment variable, you can specify
 | `XYOPS_foreground` | `true` | Run xyOps in the foreground (no background daemon fork). |
 | `XYOPS_echo` | `true` | Echo the event log to the console (STDOUT), use in conjunction with `XYOPS_foreground`. |
 | `XYOPS_color` | `true` | Echo the event log with color-coded columns, use in conjunction with `XYOPS_echo`. |
-| `XYOPS_base_app_url` | `http://xyops.yourcompany.com` | Override the [base_app_url](config.md#base_app_url) configuration property. |
-| `XYOPS_email_from` | `xyops@yourcompany.com` | Override the [email_from](config.md#email_from) configuration property. |
+| `XYOPS_base_app_url` | `http://xyops.mycompany.com` | Override the [base_app_url](config.md#base_app_url) configuration property. |
+| `XYOPS_email_from` | `xyops@mycompany.com` | Override the [email_from](config.md#email_from) configuration property. |
 | `XYOPS_WebServer__port` | `80` | Override the `port` property *inside* the [WebServer](config.md#webserver) object. |
 | `XYOPS_WebServer__https_port` | `443` | Override the `https_port` property *inside* the [WebServer](config.md#webserver) object. |
 | `XYOPS_Storage__Filesystem__base_dir` | `/data/xyops` | Override the `base_dir` property *inside* the [Filesystem](config.md#storage-filesystem) object *inside* the [Storage](config.md#storage) object. |
@@ -196,7 +202,7 @@ Almost every [configuration property](config.md) can be overridden using this en
 Here is how you can generate daily backups of critical xyOps data, regardless of your backend storage engine.  First, create an [API Key](api.md#api-keys) and grant it the [bulk_export](privileges.md#bulk_export) privilege (this is required to use the [admin_export_data](api.md#admin_export_data) API).  You can then request a backup using a [curl](https://curl.se/) command like this:
 
 ```sh
-curl -X POST "https://xyops.yourcompany.com/api/app/admin_export_data" \
+curl -X POST "https://xyops.mycompany.com/api/app/admin_export_data" \
 	-H "X-API-Key: YOUR_API_KEY_HERE" -H "Content-Type: application/json" \
 	-d '{"lists":"all","indexes":["tickets"]}' -O -J
 ```
@@ -264,9 +270,9 @@ A few prerequisites for this setup:
 
 For the examples below, we'll be using the following domain placeholders:
 
-- `xyops.yourcompany.com` - User-facing domain which should route to Nginx / SSO.
-- `xyops01.yourcompany.com` - Internal domain for conductor server #1.
-- `xyops02.yourcompany.com` - Internal domain for conductor server #2.
+- `xyops.mycompany.com` - User-facing domain which should route to Nginx / SSO.
+- `xyops01.internal.mycompany.com` - Internal domain for conductor server #1.
+- `xyops02.internal.mycompany.com` - Internal domain for conductor server #2.
 
 The reason why the conductor servers each need their own unique (internal) domain name is because of how the multi-conductor system works.  Each conductor server needs to be individually addressable, and reachable by all of your worker servers in your org.  Worker servers don't know or care about Nginx -- they contact conductors directly, and have their own auto-failover system.  Also, worker servers use a persistent WebSocket connection, and can send a large amount of traffic, depending on how many worker servers you have and how many jobs you run.  For these reasons, it's better to have worker servers connect the conductors directly, especially at production scale.
 
@@ -279,7 +285,7 @@ docker run \
 	--detach
 	--init \
 	--name xyops-nginx \
-	-e XYOPS_masters="xyops01.yourcompany.com,xyops02.yourcompany.com" \
+	-e XYOPS_masters="xyops01.internal.mycompany.com,xyops02.internal.mycompany.com" \
 	-e XYOPS_port="5522" \
 	-v "$(pwd)/tls.crt:/etc/tls.crt:ro" \
 	-v "$(pwd)/tls.key:/etc/tls.key:ro" \
@@ -295,7 +301,7 @@ services:
     image: ghcr.io/pixlcore/xyops-nginx:latest
     init: true
     environment:
-      XYOPS_masters: xyops01.yourcompany.com,xyops02.yourcompany.com
+      XYOPS_masters: xyops01.internal.mycompany.com,xyops02.internal.mycompany.com
       XYOPS_port: 5522
     volumes:
       - "./tls.crt:/etc/tls.crt:ro"
@@ -315,13 +321,13 @@ Once you have Nginx running, we can fire up the xyOps backend.  This is document
 docker run \
 	--detach \
 	--init \
-	--name xyops1 \
-	--hostname xyops01.yourcompany.com \
-	--restart unless-stopped \
-	-e XYOPS_masters="xyops01.yourcompany.com,xyops02.yourcompany.com" \
+	--name xyops-conductor-1 \
+	--hostname xyops01.internal.mycompany.com \
+	-e XYOPS_masters="xyops01.internal.mycompany.com,xyops02.internal.mycompany.com" \
 	-e TZ="America/Los_Angeles" \
 	-v "/local/path/to/xyops-conf:/opt/xyops/conf" \
 	-v "/var/run/docker.sock:/var/run/docker.sock" \
+	--restart unless-stopped \
 	-p 5522:5522 \
 	-p 5523:5523 \
 	ghcr.io/pixlcore/xyops:latest
@@ -333,10 +339,11 @@ And here it is as a docker compose file:
 services:
   xyops1:
     image: ghcr.io/pixlcore/xyops:latest
-    hostname: xyops01.yourcompany.com # change this per conductor server
+	container_name: xyops-conductor-01
+    hostname: xyops01.internal.mycompany.com # change this per conductor server
     init: true
     environment:
-      XYOPS_masters: xyops01.yourcompany.com,xyops02.yourcompany.com
+      XYOPS_masters: xyops01.internal.mycompany.com,xyops02.internal.mycompany.com
       TZ: America/Los_Angeles
     volumes:
       - "/local/path/to/xyops-conf:/opt/xyops/conf"
