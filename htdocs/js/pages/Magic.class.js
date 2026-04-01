@@ -64,8 +64,26 @@ Page.Magic = class Magic extends Page.PageUtils {
 			this.body = `You are about to manually launch a job for the event &ldquo;<b>${this.title}</b>&rdquo;.  Please enter values for all the event-defined parameters if applicable.`
 		}
 		
+		// extract html comment variables from markdown body (e.g. button)
+		this.bodyArgs = {};
+		this.body = this.body.replace( /<\!--\s*(\w+)\:\s*(.*?)\s*-->\s*/g, function(m_all, m_g1, m_g2) {
+			var value = m_g2.trim();
+			
+			// massage value into various types
+			if (value === 'true') value = true;
+			else if (value === 'false') value = false;
+			else if (value.match(/^\-?\d+$/)) value = parseInt(value);
+			else if (value.match(/^\-?\d+\.\d+$/)) value = parseFloat(value);
+			
+			self.bodyArgs[ m_g1.toLowerCase() ] = value;
+			return '';
+		} ).trim();
+		
+		var btn_icon = this.bodyArgs.icon || 'run-fast';
+		var btn_label = this.bodyArgs.button || 'Start Job';
+		
 		html += '<div class="dialog inline wider">';
-			html += '<div class="dialog_title">' + strip_html(this.title) + '</div>';
+			if (!this.body.match(/^\s*\#/)) html += '<div class="dialog_title">' + strip_html(this.title) + '</div>';
 			html += '<div class="dialog_content">';
 			// html += '<div class="box_content">';
 			
@@ -115,7 +133,7 @@ Page.Magic = class Magic extends Page.PageUtils {
 		
 		html += '<div class="dialog_buttons">';
 			html += '<div class="button danger mobile_hide" onClick="$P().resetForm()"><i class="mdi mdi-undo-variant">&nbsp;</i><span>Reset</span></div>';
-			html += '<div class="button primary" id="btn_start" onClick="$P().doRunEvent()"><i class="mdi mdi-run-fast">&nbsp;</i><span>Start Job</span></div>';
+			html += `<div class="button primary" id="btn_start" onClick="$P().doRunEvent()"><i class="mdi mdi-${btn_icon}">&nbsp;</i><span>${btn_label}</span></div>`;
 		html += '</div>';
 		
 		html += '</div>'; // dialog
@@ -217,7 +235,12 @@ Page.Magic = class Magic extends Page.PageUtils {
 		var self = this;
 		
 		app.api.post( 'app/magic/' + this.token, this.values, function(resp) {
-			self.streamJob(resp.id, resp.stream);
+			if (self.bodyArgs.response) {
+				// skip stream, show static response
+				self.job = { code: 0, description: self.bodyArgs.response };
+				self.finishJob();
+			}
+			else self.streamJob(resp.id, resp.stream);
 		} );
 	}
 	

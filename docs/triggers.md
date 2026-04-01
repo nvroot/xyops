@@ -209,6 +209,23 @@ Example:
 }
 ```
 
+Magic Link has a few advanced features, which are available by including specially-formatted HTML comments in your custom landing page body text.  First, you can customize the "Start Job" button and icon by including these two HTML comment tags:
+
+```html
+<!-- Button: My Button -->
+<!-- Icon: cat -->
+```
+
+The icon should be a valid Icon ID from [Material Design Icons](https://pictogrammers.com/library/mdi/).
+
+Second, you can have the magic form skip over streaming the job progress and job result data, and instead just show a static success response.  To do this, include this HTML comment tag:
+
+```html
+<!-- Response: Your request was received successfully -->
+```
+
+If a custom `Response` is provided, the job runs in the background, and the user is immediately shown a "faux" success screen, with the provided text.  In this case the job response output, files, and data are hidden from the user.
+
 ### Keyboard
 
 This trigger type binds the event to one or more keyboard shortcuts, so any user (with appropriate privileges) can run the job by hitting a key combo will logged into the xyOps UI.
