@@ -74,7 +74,7 @@ First, create a new [API Key](api.md#api-keys) in the UI, and assign it the [add
 Next, click "Add Server" from the sidebar, select "Docker" as the target platform, and copy the installation command to your clipboard.  Do not enter any server options like label, icon or group.  It will look like this:
 
 ```sh
-docker run --detach --init --restart unless-stopped -v /var/run/docker.sock:/var/run/docker.sock -e XYOPS_setup="http://YOUR_XYOPS_SERVER:5522/api/app/satellite/config?t=1234567890abcdefghijk" --name "xyops-worker-12345" --hostname "docker-12345" ghcr.io/pixlcore/xysat:latest
+docker run --detach --init --restart unless-stopped -v xysat-conf-12345:/etc/xysat -v /var/run/docker.sock:/var/run/docker.sock -e XYSAT_config_file="/etc/xysat/config.json" -e XYOPS_setup="http://YOUR_XYOPS_SERVER:5522/api/app/satellite/config?t=1234567890abcdefghijk" --name "xyops-worker-12345" --hostname "docker-12345" ghcr.io/pixlcore/xysat:latest
 ```
 
 Grab the `XYOPS_setup` environment variable from the install command, and replace the temporary auth token (which expires after 24 hours) with your new API Key (which won't expire).  The token is the value of the `t` query string parameter in the URL.  Example:
@@ -83,11 +83,9 @@ Grab the `XYOPS_setup` environment variable from the install command, and replac
 http://YOUR_XYOPS_SERVER:5522/api/app/satellite/config?t=YOUR_API_KEY_HERE
 ```
 
-You can now use this to spin up as many Docker workers as you want.  Just specify your new URL with API Key as the `XYOPS_setup` environment variable, and use the official `ghcr.io/pixlcore/xysat:latest` Docker image.  Make sure to add a bind mount for the configuration file, so it will survive container image upgrades:
+You can now use this to spin up as many Docker workers as you want.  Just specify your new URL with API Key as the `XYOPS_setup` environment variable, and use the official `ghcr.io/pixlcore/xysat:latest` Docker image.
 
-```sh
--v ./xysat-config.json:/opt/xyops/satellite/config.json
-```
+Make sure you use a different named volume mount for each server's configuration directory (each server needs its own).
 
 Here is an example using Docker Compose:
 
@@ -98,9 +96,10 @@ services:
     init: true
     restart: unless-stopped
     volumes:
+	  - xysat-conf-worker1:/etc/xysat
       - /var/run/docker.sock:/var/run/docker.sock
-	  - ./worker1-config.json:/opt/xyops/satellite/config.json
     environment:
+	  XYOPS_config_file: /etc/xysat/config.json
       XYOPS_setup: http://YOUR_XYOPS_SERVER:5522/api/app/satellite/config?t=YOUR_API_KEY_HERE
 
   worker2:
@@ -108,9 +107,10 @@ services:
     init: true
     restart: unless-stopped
     volumes:
+	  - xysat-conf-worker2:/etc/xysat
       - /var/run/docker.sock:/var/run/docker.sock
-	  - ./worker2-config.json:/opt/xyops/satellite/config.json
     environment:
+	  XYOPS_config_file: /etc/xysat/config.json
       XYOPS_setup: http://YOUR_XYOPS_SERVER:5522/api/app/satellite/config?t=YOUR_API_KEY_HERE
 
   worker3:
@@ -118,9 +118,10 @@ services:
     init: true
     restart: unless-stopped
     volumes:
+	  - xysat-conf-worker3:/etc/xysat
       - /var/run/docker.sock:/var/run/docker.sock
-	  - ./worker3-config.json:/opt/xyops/satellite/config.json
     environment:
+	  XYOPS_config_file: /etc/xysat/config.json
       XYOPS_setup: http://YOUR_XYOPS_SERVER:5522/api/app/satellite/config?t=YOUR_API_KEY_HERE
 ```
 
