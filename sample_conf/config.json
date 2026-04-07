@@ -404,6 +404,26 @@
 			}
 		},
 		
+		"Postgres": {
+			"min": 1,
+			"max": 32,
+			"host": "localhost",
+			"database": "postgres",
+			"user": "postgres",
+			"password": "postgres",
+			"port": 5432,
+			"statement_timeout": 5000,
+			"query_timeout": 6000,
+			"connectionTimeoutMillis": 30000,
+			"idleTimeoutMillis": 10000,
+			"table": "xyops",
+			"cache": {
+				"enabled": true,
+				"maxItems": 100000,
+				"maxBytes": 104857600
+			}
+		},
+		
 		"AWS": {
 			"region": "us-west-1",
 			"credentials": {
