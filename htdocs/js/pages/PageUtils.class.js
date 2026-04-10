@@ -5374,6 +5374,21 @@ Page.PageUtils = class PageUtils extends Page.Base {
 			})
 		});
 		
+		// priority
+		var queue_limit = find_object( event.limits || [], { type: 'queue', enabled: true } );
+		var ok_show_priority = !!(queue_limit && queue_limit.amount);
+		if (ok_show_priority) {
+			html += this.getFormRow({
+				label: 'Queue Hint:',
+				content: this.getFormCheckbox({
+					id: 'fe_re_priority',
+					label: 'High Priority',
+					checked: false
+				}),
+				caption: 'Optionally prioritize job so it jumps to the front of the queue (if applicable).'
+			});
+		}
+		
 		// user form fields
 		html += this.getFormRow({
 			label: 'User Parameters:',
@@ -5403,6 +5418,9 @@ Page.PageUtils = class PageUtils extends Page.Base {
 			// add tags if specified
 			var tags = $('#fe_re_tags').val();
 			if (tags.length) job.tags = tags;
+			
+			// add priority if checked
+			if (ok_show_priority && $('#fe_re_priority').is(':checked')) job.priority = true;
 			
 			Dialog.showProgress( 1.0, "Launching Job..." );
 			

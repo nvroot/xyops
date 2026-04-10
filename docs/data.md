@@ -913,6 +913,10 @@ While the job is running, i.e. in the data passed to the Event Plugin on the rem
 }
 ```
 
+### Job.priority
+
+If set to `true` and queuing is enabled on the event, new jobs with priority will jump to the head of the queue, before jobs without priority.
+
 ## Monitor
 
 A monitor keeps track on a specific numeric server metric.  These are graphed in the UI so you can see trends over time, and you can also point alerts at them.  Here is an example monitor in JSON format:

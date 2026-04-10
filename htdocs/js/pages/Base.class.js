@@ -1478,7 +1478,9 @@ Page.Base = class Base extends Page {
 		switch (job.state) {
 			case 'queued': 
 				icon = 'tray-full'; 
-				if (job.position) nice_state += ` (#${job.position})`;
+				if (job.position && job.priority) nice_state += ` (#${job.position} - Priority)`;
+				else if (job.position) nice_state += ` (#${job.position})`;
+				else if (job.priority) nice_state += ` (Priority)`;
 			break;
 			
 			case 'start_delay': 
