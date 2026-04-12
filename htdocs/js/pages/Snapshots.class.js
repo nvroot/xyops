@@ -654,7 +654,9 @@ Page.Snapshots = class Snapshots extends Page.ServerUtils {
 		
 		config.quick_monitors.forEach( function(def) {
 			// { "id": "cpu_load", "title": "CPU Load Average", "source": "cpu.avgLoad", "type": "float", "suffix": "" },
-			html += '<div><canvas id="c_vs_' + def.id + '" class="chart"></canvas></div>';
+			var attribs = '';
+			if (def.groups && def.groups.length && !app.includesAny(snapshot.groups, def.groups)) attribs = ' style="display:none"';
+			html += '<div' + attribs + '><canvas id="c_vs_' + def.id + '" class="chart"></canvas></div>';
 		} );
 		
 		html += '</div>';
@@ -1102,7 +1104,9 @@ Page.Snapshots = class Snapshots extends Page.ServerUtils {
 		
 		config.quick_monitors.forEach( function(def) {
 			// { "id": "cpu_load", "title": "CPU Load Average", "source": "cpu.avgLoad", "type": "float", "suffix": "" },
-			html += '<div><canvas id="c_vg_' + def.id + '" class="chart"></canvas></div>';
+			var attribs = '';
+			if (def.groups && def.groups.length && !def.groups.includes(group.id)) attribs = ' style="display:none"';
+			html += '<div' + attribs + '><canvas id="c_vg_' + def.id + '" class="chart"></canvas></div>';
 		} );
 		
 		html += '</div>';
@@ -1310,9 +1314,8 @@ Page.Snapshots = class Snapshots extends Page.ServerUtils {
 		} ); // confirm
 	}
 	
-	onDataUpdate(key, data) {
+	onPageUpdate(pcmd, pdata) {
 		// refresh things as needed
-		// if ((this.args.sub == 'view') && (key == 'activeAlerts')) this.getSnapshotAlerts();
 		if ((this.args.sub == 'list') && (pcmd == 'bulk_delete_completed')) {
 			app.cacheBust = hires_time_now();
 			this.doSearch();

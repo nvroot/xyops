@@ -125,19 +125,6 @@ xyOps ships with a set of standard monitors. Here is what each tracks:
 Use these as templates for your own monitors, or create more from scratch. You can also import/export monitors as JSON files.
 
 
-## QuickMon
-
-QuickMon (Quick Monitors) are lightweight, predefined real-time monitors sampled every second on each server. They are meant for "right now" visibility and short-term trend lines on server and group pages.
-
-- **Presets**: CPU load/usage, memory used/available, disk read/write bytes/sec, network in/out bytes/sec.
-- **Retention**: The last 60 seconds per server is stored in memory.
-- **Display**: Real-time graphs and gauges on Server and Group pages. New samples stream live via websockets.
-- **Snapshots**: The most recent 60-second series is embedded into all server and group snapshots.
-- **Config**: Definitions live in `config.json` under [quick_monitors](config.md#quick_monitors). Each preset includes `id`, `source` path (from the per-second agent data), `type` (integer/float/bytes), and optional delta/time options mirroring monitor behavior.
-
-QuickMon complements minute-level monitors: use QuickMon for immediate visibility, and standard monitors for historical analysis and alerting.
-
-
 ## Examples and Recipes
 
 - **Track Specific Process Memory**
@@ -156,3 +143,193 @@ QuickMon complements minute-level monitors: use QuickMon for immediate visibilit
   - Type: `integer`.
 
 If your expression returns a string (e.g., a custom command output), use "Data Match" to extract the number. For advanced metrics, write a [Monitor Plugin](plugins.md#monitor-plugins) that emits structured data, then point a monitor expression at it.
+
+
+## QuickMon
+
+QuickMon (Quick Monitors) are lightweight, predefined real-time monitors sampled every second on each server. They are meant for immediate visibility and short-term trend lines on server and group pages.
+
+- **Presets**: CPU load/usage, memory used/available, disk read/write bytes/sec, network in/out bytes/sec.
+- **Retention**: The last 60 seconds per server is stored in memory.
+- **Display**: Real-time graphs and gauges on Server and Group pages. New samples stream live via websockets.
+- **Snapshots**: The most recent 60-second series is embedded into all server and group snapshots.
+- **Config**: Definitions live in `config.json` under [quick_monitors](config.md#quick_monitors). Each preset includes `id`, `source` path (from the per-second agent data), `type` (integer/float/bytes), and optional delta/time options mirroring monitor behavior.
+- **Platforms**: Supported on Linux and macOS.
+
+QuickMon complements minute-level monitors: use QuickMon for immediate visibility, and standard monitors for historical analysis and alerting.
+
+### Custom QuickMon Graphs
+
+You can extend the QuickMon system by adding your own custom graphs.  This is done by editing the [quick_monitors](config.md#quick_monitors) array in your xyOps configuration, and appending your own items.  Here is an example of a custom graph:
+
+```json
+{ "id": "_qm_mem_free", "title": "Memory Free", "source": "mem.free", "type": "bytes", "suffix": "" },
+```
+
+Each quick monitor definition should include the following properties:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `id` | String | **(Required)** A unique ID for the quick monitor.  See below for special rules. |
+| `title` | String | **(Required)** A visual title for the monitor, displayed on the top of the graph. |
+| `source` | String | **(Required)** The data source for the monitor, which is in [XYEXP](xyexp.md) format.  See below. |
+| `type` | String | **(Required)** The data type, which should be one of: `integer`, `float`, `bytes`, `seconds`, or `milliseconds`. |
+| `suffix` | String | An optional suffix to display after the data value. |
+| `data_match` | String | An optional regular expression to extract a numerical value out of a string property. |
+| `groups` | Array | An optional list of [Group.id](data.md#group-id)s to limit where the quick monitor is displayed. |
+
+For the `id` property, please use lower-case alphanumeric and underscores only, and make sure this does **not** collide with any existing [Monitor.id](data.md#monitor-id)s or [Alert.id](data.md#alert-id)s.  A common convention is to prefix the ID with `_qm_`.
+
+The QuickMon data that is accessible via the `source` property is limited, because it is updated every second, and we want to use as little system resources as possible.  Here is an example of a QuickMon data burst, and the properties that are (usually) available.  Note that these vary between server architectures, platforms, and OSes.
+
+```json
+{
+	"mem": {
+		"total": 950247424,
+		"free": 224559104,
+		"used": 269819904,
+		"available": 680427520,
+		"buffers": 91369472,
+		"cached": 374026240,
+		"swapcached": 19697664,
+		"active": 295432192,
+		"inactive": 279474176,
+		"unevictable": 16384,
+		"mlocked": 16384,
+		"swaptotal": 536866816,
+		"swapfree": 335609856,
+		"zswap": 0,
+		"zswapped": 0,
+		"dirty": 20480,
+		"writeback": 0,
+		"anonpages": 107511808,
+		"mapped": 146522112,
+		"shmem": 2834432,
+		"kreclaimable": 60678144,
+		"slab": 94081024,
+		"sreclaimable": 60678144,
+		"sunreclaim": 33402880,
+		"kernelstack": 5189632,
+		"pagetables": 8871936,
+		"secpagetables": 0,
+		"nfs_unstable": 0,
+		"bounce": 0,
+		"writebacktmp": 0,
+		"commitlimit": 1011990528,
+		"committed_as": 1827897344,
+		"vmalloctotal": 267353325568,
+		"vmallocused": 15085568,
+		"vmallocchunk": 0,
+		"percpu": 786432,
+		"cmatotal": 268435456,
+		"cmafree": 168939520
+	},
+	"net": {
+		"rx": 10382830154,
+		"tx": 2513760237
+	},
+	"cpu": {
+		"avgLoad": 0,
+		"currentLoad": 0,
+		"cpus": [
+			{
+				"user": 0,
+				"nice": 0,
+				"system": 0,
+				"idle": 100,
+				"iowait": 0,
+				"irq": 0,
+				"softirq": 0,
+				"active": 0
+			},
+			{
+				"user": 0,
+				"nice": 0,
+				"system": 0,
+				"idle": 100,
+				"iowait": 0,
+				"irq": 0,
+				"softirq": 0,
+				"active": 0
+			},
+			{
+				"user": 0,
+				"nice": 0,
+				"system": 0,
+				"idle": 100,
+				"iowait": 0,
+				"irq": 0,
+				"softirq": 0,
+				"active": 0
+			},
+			{
+				"user": 0,
+				"nice": 0,
+				"system": 0,
+				"idle": 100,
+				"iowait": 0,
+				"irq": 0,
+				"softirq": 0,
+				"active": 0
+			}
+		],
+		"totals": {
+			"user": 0,
+			"nice": 0,
+			"system": 0,
+			"idle": 100,
+			"iowait": 0,
+			"irq": 0,
+			"softirq": 0,
+			"active": 0
+		}
+	},
+	"fs": {
+		"rx": 2525403648,
+		"wx": 13779088384
+	},
+	"commands": {
+		/* See next section... */
+	}
+}
+```
+
+- The `mem` properties are sourced from `/proc/meminfo` on Linux and `vm_stat` on macOS.
+- The `net` properties are sourced from `/proc/net/dev` on Linux and `netstat` on macOS.
+- The `cpu` properties are sourced from `/proc/stat` on Linux and [os.cpus()](https://nodejs.org/api/os.html#oscpus) on macOS.
+- The `fs` properties are sourced from `/proc/diskstats` on Linux and `ioreg` on macOS.
+- The `command` properties are explained in the next section.
+
+Note that quick monitors are not supported on Windows servers.
+
+### Custom QuickMon Plugins
+
+> [!WARNING]
+> This is an advanced feature.  Please read the documentation very carefully, and use at your own risk.  Also, this requires xyOps v1.0.47+ and xySat v1.0.18+.
+
+Any [Monitor Plugin](plugins.md#monitor-plugins) can be included part of the every-second QuickMon data capture that runs on all servers.  All you need to do is check the "**Include in Quick Monitors**" checkbox when creating or editing your Monitor Plugin.  But **please understand** this means that your plugin will be executed **every second** on all the servers it targets.  So it needs to fully execute and exit *extremely* fast, preferably in 50ms or less.  Anything slower and the QuickMon graphs may not render or animate properly.  The maximum execution time is 1000ms at which point the Plugin process will be aborted.
+
+For this reason it is generally best to just grab the contents of a file, rather than running an expensive command.  Here is an example:
+
+- **Executable**: `/bin/sh`
+- **Script**: `cat /sys/class/thermal/thermal_zone0/temp`
+
+In this case the Plugin is just printing the contents of the `/sys/class/thermal/thermal_zone0/temp` file, which typically contains the current CPU temperature in millidegree Celsius on Linux.  The output of your Monitor Plugins are placed into the `commands` object in the QuickMon data.  We can then use this value in a [Custom QuickMon Graph](#custom-quickmon-graphs) like this:
+
+```json
+{ 
+	"id": "_qm_cpu_temperature", 
+	"title": "CPU Temperature", 
+	"source": "integer(commands.MY_PLUGIN_ID) / 1000", 
+	"type": "integer", 
+	"suffix": "C"
+}
+```
+
+A few notes:
+
+- We prefixed our ID with `_qm_` to ensure it will never collide with any [Monitor.id](data.md#monitor-id)s or [Alert.id](data.md#alert-id)s.
+- Replace `MY_PLUGIN_ID` with the [Plugin.id](data.md#plugin-id) of your Monitor Plugin.
+- The `source` is in [XYEXP](xyexp.md) format, and thus we can use utility functions like `integer()` and also divide the value by 1000 to get celsius.
+- The QuickMon graphs are rendered in the order they appear in the [quick_monitors](config.md#quick_monitors) array.
+- After saving the xyOps configuration file, please wait a few seconds, then refresh the web UI for the graph changes to take effect.

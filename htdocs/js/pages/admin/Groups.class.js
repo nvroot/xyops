@@ -906,7 +906,9 @@ Page.Groups = class Groups extends Page.ServerUtils {
 		
 		config.quick_monitors.forEach( function(def) {
 			// { "id": "cpu_load", "title": "CPU Load Average", "source": "cpu.avgLoad", "type": "float", "suffix": "" },
-			html += '<div><canvas id="c_vg_' + def.id + '" class="chart"></canvas></div>';
+			var attribs = '';
+			if (def.groups && def.groups.length && !def.groups.includes(group.id)) attribs = ' style="display:none"';
+			html += '<div' + attribs + '><canvas id="c_vg_' + def.id + '" class="chart"></canvas></div>';
 		} );
 		
 		html += '</div>';
@@ -1674,6 +1676,7 @@ Page.Groups = class Groups extends Page.ServerUtils {
 		
 		app.api.post( 'app/create_group_snapshot', { group: this.group.id }, function(resp) {
 			Dialog.hideProgress();
+			app.cacheBust = hires_time_now();
 			var loc = 'Snapshots?sub=view&id=' + resp.id;
 			app.showMessage('success', "Your snapshot was created successfully.  Click here to view it, or find it on the Snapshots page.", 8, loc);
 		} ); // api.post

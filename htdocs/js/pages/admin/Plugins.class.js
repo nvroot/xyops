@@ -1147,6 +1147,18 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 			caption: 'Select the output format that the script generates, so it can be parsed correctly.'
 		});
 		
+		// quick
+		html += this.getFormRow({
+			id: 'd_ep_quick',
+			label: 'Advanced:',
+			content: this.getFormCheckbox({
+				id: 'fe_ep_quick',
+				label: 'Include in Quick Monitors',
+				checked: !!plugin.quick
+			}),
+			caption: 'Check this box to also run the monitoring plugin **every second** as part of the Quick Monitors system.  This is an advanced setting, so please use with caution.  [Learn More](#Docs/monitors/quickmon)'
+		});
+		
 		// UID
 		html += this.getFormRow({
 			label: 'Run as User:',
@@ -1246,12 +1258,14 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 				this.div.find('#d_ep_params').hide();
 				this.div.find('#d_ep_groups').show();
 				this.div.find('#d_ep_format').show();
+				this.div.find('#d_ep_quick').show();
 			break;
 			
 			default:
 				this.div.find('#d_ep_params').show();
 				this.div.find('#d_ep_groups').hide();
 				this.div.find('#d_ep_format').hide();
+				this.div.find('#d_ep_quick').hide();
 			break;
 		} // switch plugin_type
 		
@@ -1295,11 +1309,13 @@ Page.Plugins = class Plugins extends Page.PageUtils {
 				this.params = plugin.params = [];
 				plugin.groups = $('#fe_ep_groups').val();
 				plugin.format = $('#fe_ep_format').val();
+				plugin.quick = $('#fe_ep_quick').is(':checked');
 			break;
 			
 			default:
 				plugin.groups = [];
 				plugin.format = '';
+				delete plugin.quick;
 			break;
 		} // switch plugin_type
 		
