@@ -108,6 +108,34 @@ One common use case for this feature is to apply the target expression to proper
 userData.foo == "bar"
 ```
 
+### Custom Job Weight
+
+You can set an optional "job weight" per event, which is used when selecting a server to run a job.  This is designed to compliment [Max Jobs Per Server](servers.md#max-jobs-per-server), and allows you to limit how many jobs can run on specific servers based on their weight.
+
+As an example, say you have a job that is particularly "heavy", like a video conversion script using ffmpeg.  You can set the weight to something high like `8`, and this effectively treats the job as taking up 8 "slots" when calculating server availability and the "max jobs" server setting.
+
+If a new job would exceed the "max jobs" setting on a server, that server is removed from consideration (just as if it was otherwise unavailable or offline).  If a server's "max jobs" is less than the job weight, it will never be chosen for that job.
+
+By default all jobs have a weight of `1`.  To set a job weight higher, edit the [Max Concurrent Jobs](limits.md#max-concurrent-jobs) limit on the event (or attach a [Limit Node](workflows.md#limit-nodes) in your workflow), and in the dialog you will see a new "Server Job Weight" field.  Note that this weight is **only** used for server selection, and does not affect the job's own concurrent maximum setting.
+
+### Group Priority Targeting
+
+The [prefer_first_natural](data.md#event-algo) event algorithm can be used in conjunction with [Max Jobs Per Server](servers.md#max-jobs-per-server) feature to effectively implement group priority targeting.  When an event is targeted at multiple groups, and `prefer_first_natural` is selected, the first group of servers will be preferred, *until* they cannot be (i.e. via max jobs per server limits), and only then will the second group will be considered.
+
+Remember that the max jobs setting on servers will effectively "remove" the server from consideration when it is filled up (or cannot fit the new job based on its [weight](#custom-job-weight)).  With `prefer_first_natural` this will pick the very next server in the group, until all those servers are maxed out (i.e. unavailable for further jobs), and only then will the additional groups be considered.
+
+Note that you can control the order in which groups are sorted inside of the [Event.targets](data.md#event-targets) list by going to the "Groups" page and dragging your groups around to resort them.  Groups higher on the list will appear first in the event target list.
+
+### Priority Job Queuing
+
+Jobs have an optional [Job.priority](data.md#job-priority) flag.  When this is set to `true` and [queuing](limits.md#max-queue-limit) is enabled on the event, the priority job will effectively "hop" the queue, and be inserted right at the head, so it is processed before all other non-priority jobs.
+
+The priority flag can be set when a job is started manually, or via API.  For manual runs in the UI, the job configuration dialog will show a new "High Priority" checkbox, if [queuing](limits.md#max-queue-limit) is enabled on the event.  For API calls, when using the [run_event](api.md#run_event) API, simply include a `priority` property and set it to `true`.
+
+When multiple priority jobs are queued for an event, the ones waiting the longest will be processed first (i.e. FIFO).  Once all the priority jobs are processed, the non-priority jobs are dequeued (also FIFO).
+
+Note that you cannot set the priority flag via [Magic Link](triggers.md#magic-link) triggers (by design).
+
 ## Plugins
 
 Every non-workflow event references an Event Plugin via `plugin`, which defines how to execute the job: command/script, user/group IDs, kill signals, and parameter definitions. The scheduler copies missing default parameter values from the plugin spec at launch time, and enforces locked/required parameters for non-admin users.
