@@ -324,7 +324,7 @@
 					"value": false
 				}
 			],
-			"kill": "parent",
+			"kill": "all",
 			"runner": true,
 			"notes": "Use this Plugin to run custom scripts inside a Docker container.",
 			"icon": "docker",
