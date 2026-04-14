@@ -62,13 +62,12 @@ volumes:
 
 Please change `/local/path/to/xyops01-conf` to a suitable location for the xyOps configuration directory to live on the host machine.
 
-Then hit http://localhost:5522/ in your browser for HTTP, or https://localhost:5523/ for HTTPS (note that this will have a self-signed cert -- see [TLS](#tls) below).  A default administrator account will be created with username `admin` and password `admin`.  This will create a Docker volume (`xy-data`) to persist the xyOps database, which by default is a hybrid of a SQLite DB and the filesystem itself for file storage.
+Then hit http://localhost:5522/ in your browser (see [TLS](#tls) below for HTTPS setup).  A default administrator account will be created with username `admin` and password `admin`.  This will create a Docker volume (`xy-data`) to persist the xyOps database, which by default is a hybrid of a SQLite DB and the filesystem itself for file storage.
 
 A few notes:
 
 - **Important:** Please change the sample `xyops01.internal.mycompany.com` hostname to something that actually resolves and is addressable on your network.  **Without this, many features will not work properly.**
 	- Also, you must change the `XYOPS_masters` environment variable to match this, as this defines your conductor "cluster" (in this case a cluster of one).
-- In this example xyOps will have a self-signed cert for TLS, which the worker will accept by default.  See [TLS](#tls) for more details.
 - Change the `TZ` environment variable to your local timezone, for proper midnight log rotation and daily stat resets.
 - The `XYOPS_xysat_local` environment variable causes xyOps to launch [xySat](#satellite) in the background, in the same container.  This is so you can start running jobs right away -- it is great for testing and home labs, but *not recommended for production*.
 - The `XYOPS_masters` environment variable is how you define a cluster of multiple conductor servers (comma-separated hostnames).  In this case just set it to the hostname of the primary.
@@ -247,7 +246,7 @@ Note that SQLite only stores data, not "files", under the default hybrid SQLite 
 
 ## TLS
 
-The xyOps built-in web server ([pixl-server-web](https://github.com/jhuckaby/pixl-server-web)) supports TLS.  Please read the following guide for setup instructions:
+The xyOps built-in web server ([pixl-server-web](https://github.com/jhuckaby/pixl-server-web)) supports TLS, but you will need a valid certificate for all features to work correctly.  Please read the following guide for setup instructions:
 
 [Let's Encrypt / ACME TLS Certificates](https://github.com/jhuckaby/pixl-server-web#lets-encrypt--acme-tls-certificates)
 
