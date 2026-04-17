@@ -1,5 +1,30 @@
 # xyOps Changelog
 
+## Version v1.0.48
+
+> April 16, 2026
+
+- [`c95f5c8`](https://github.com/pixlcore/xyops/commit/c95f5c86a9da5900cf497273ad81ee0283a65858): Version 1.0.48
+	- Bump pixl-request to v2.6.5 for upstream vuln fix in basic-ftp (sub-dep of proxy-agent).  Yes, another one.
+- [`0635e84`](https://github.com/pixlcore/xyops/commit/0635e8446e9a875c174a887ace3f253837171c53): Satellite Bootstrap: Always honor `satellite.config.port` when constructing one-liner install URLs.
+- [`bf5a2ba`](https://github.com/pixlcore/xyops/commit/bf5a2ba256e092c44bcbaedd566aaf77d5139ce6): Server Hostname/IP Changes: Fix typos in warning activity messages.
+- [`cb17082`](https://github.com/pixlcore/xyops/commit/cb17082b0db6e3b570a1e625a2e496df1693b30c): Local Satellite: Now connecting via localhost instead of hostID, to work better with proxy setups.  Also, support airgap.
+- [`98042bf`](https://github.com/pixlcore/xyops/commit/98042bf2b7bf4ec5300f78c3c20fb98b0fd930f6): Cosmetic: My Account Page: Fix typo in caption text for "Sync Enabled" checkbox.
+- [`8f315cd`](https://github.com/pixlcore/xyops/commit/8f315cda9d894ec28dec953bf27629f79f609127): Cosmetic: Support displaying custom IP address sent by xySat instead of socket IP (with Tailscale socket IP is always 127.0.0.1).
+- [`354a10b`](https://github.com/pixlcore/xyops/commit/354a10b3bdd7b3e5cdd6b28ec565eafdc7db5174): Cosmetic UI Fix: Properly strip hostnames in system upgrade menus.
+- [`43d6957`](https://github.com/pixlcore/xyops/commit/43d6957c2db9c1896c353352e92cc281f1e16ec0): Feature: Add enhanced support for Tailscale, including priv/role auto assignment, and a full tailscale setup guide.
+- [`4e11477`](https://github.com/pixlcore/xyops/commit/4e11477c2e90bba4c939bfd438ad815b0bd558a8): API: get_events: Allow basic filtering to search for events by title, plugin, etc.  Fixes #262.
+- [`8a0c060`](https://github.com/pixlcore/xyops/commit/8a0c060a9686beb270c99ca6a5b312fabdf0c427): Initial Login UI: Improve the "change initial password" dialog to be more clear, include a password verification field.
+- [`da3d950`](https://github.com/pixlcore/xyops/commit/da3d950dce69a810f85670b9c5e1650aec560a3f): UI Bug Fix: Incorrectly populating schedule hour menu items when browser timezone differs from user selected timezone.
+- [`d887b4e`](https://github.com/pixlcore/xyops/commit/d887b4e04820a1686942655c867d9746a7f33a86): Typo fix: When testing web hooks, the word "took" is used by mistake in the sample output string.
+- [`fc00817`](https://github.com/pixlcore/xyops/commit/fc00817674a8fb0581253369894f93ffc728d88c): Hosting Guide: Corrected some inaccurate information about TLS.
+- [`78b75b7`](https://github.com/pixlcore/xyops/commit/78b75b7a589b15baccfefc839332739b37bd509f): Initial Setup: Change default abort policy of Docker Plugin to "all".  Ref #258
+- [`34c5da2`](https://github.com/pixlcore/xyops/commit/34c5da224dbd82879e5c48686ee46c965cdbc933): Actions and Buckets Docs: Add note regarding job output data and files required for Store Bucket to work.  Ref #260.
+- [`f50d0e8`](https://github.com/pixlcore/xyops/commit/f50d0e81dfb36b11520aea5e22f4a3f79fc99e3b): UI Bug Fix: Alert Invocation Details: Use correct ID for alert history day graph (swatch grid).
+- [`620e817`](https://github.com/pixlcore/xyops/commit/620e8178ba99faf2d15f1d2e7c48b4a5849c6661): Limits Doc: Fix link regarding job weight.
+- [`59e322e`](https://github.com/pixlcore/xyops/commit/59e322ee0813032d945796a80f592fe069d00ab8): Triggers Doc: Typo in link.
+- [`a289c76`](https://github.com/pixlcore/xyops/commit/a289c7636ed9e823dd4dca9422a571bf04f07c3b): Storage Doc: Typo fix
+
 ## Version v1.0.47
 
 > April 13, 2026
