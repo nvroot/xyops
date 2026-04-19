@@ -182,6 +182,7 @@ Inputs and outputs are automatically passed along:
 
 - At workflow start, the inbound `input.data` and `input.files` are passed to the trigger node.  The trigger nodes passes these on to any soldered nodes.
 - When an Event/Job finishes, its output `data` and `files` are passed to downstream nodes as `input.data` and `input.files`.
+	- Note that your job script has to explicitly specify data and file paths for output.  See [Output Data](plugins.md#output-data) and [Output Files](plugins.md#output-files).
 - If the workflow itself has any user fields defined, these are passed to all sub-jobs via a `workflow.params` object inside the job data.
 - Tags: user tags from sub-jobs bubble up to the workflow job and can drive `tag:...` conditions.
 - HTML and table content: if a sub-job emits `html` or `table`, it bubbles up to the parent for display.  If multiple jobs emit content The latter prevails.
