@@ -545,6 +545,40 @@ And an example response:
 
 Deletions are permanent and cannot be undone.
 
+### empty_bucket
+
+```
+POST /api/app/empty_bucket/v1
+```
+
+This API empties a bucket, meaning it will delete all files and/or data, but leave the bucket itself intact.  The [edit_buckets](privileges.md#edit_buckets) privilege is required, as well as a valid user session or API Key.  The input parameters are as follows:
+
+| Property Name | Type | Description |
+|---------------|------|-------------|
+| `id` | String | **(Required)** The alphanumeric ID of the bucket to empty. |
+| `files` | Boolean | **(Required)** Set to `true` to delete all files from the bucket. |
+| `data` | Boolean | **(Required)** Set to `true` to delete all data from the bucket. |
+	
+Here is an example request:
+
+```json
+{
+	"id": "bme4wi6pg35",
+	"files": true,
+	"data": true
+}
+```
+
+And an example response:
+
+```json
+{
+	"code": 0
+}
+```
+
+Emptying is permanent and cannot be undone.
+
 ## Categories
 
 Category APIs organize events into logical groups for navigation, access control and search. Use them to list, fetch, create, update, reorder, and delete categories. Assigning an event to a category affects user visibility (via roles) and search filtering. Editing categories typically requires privileges; reading only requires a valid session or API Key.

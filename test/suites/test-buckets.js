@@ -140,6 +140,16 @@ exports.tests = [
 		assert.ok( data.code === 0, "successful api response" );
 		assert.ok( !Tools.findObject(data.files, { filename: 'rgb-ramp.png' }), "rgb-ramp.png should be deleted" );
 	},
+	
+	async function test_api_empty_bucket(test) {
+		// empty our bucket
+		let { data } = await this.request.json( this.api_url + '/app/empty_bucket/v1', {
+			"id": this.bucket_id,
+			"files": true,
+			"data": true
+		});
+		assert.ok( data.code === 0, "successful api response" );
+	},
 
 	async function test_api_delete_bucket(test) {
 		// delete our bucket
